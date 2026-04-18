@@ -1,0 +1,55 @@
+# information about the containers
+services:
+  # DB container
+  vprodb:
+    build:
+      context: ./Docker-files/db # Path to the Dockerfile
+    image: nsanjula/vprofiledb
+    container_name: vprodb # If we don't mention the name docker will add some additional prefixes and suffixes to the name
+    ports:
+      - "3306:3306" # host port : container port, then we can access DB service as localhost:3306
+    volumes:
+      - vprodbdata:/var/lib/mysql # Place where mysql stores it's data. So if container is removed, after that also we can have the access to the data
+    environment:
+      - MYSQL_ROOT_PASSWORD=vprodbpass # This value overrides the value mentioned in the Dockerfile
+
+  # Memcache container --> Name from the application.properties file
+  vprocache01:
+    image: memcached
+    container_name: vprocache01
+    ports:
+      - "11211:11211" # From the application.properties file
+
+  # RabbitMQ container
+  vpromq01:
+    image: rabbitmq
+    container_name: vpromq01 # From the application.properties file
+    ports:
+      - "5672:5672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest # From the application.properties file
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  # Tomcat container
+  vproapp:
+    build:
+      context: ./Docker-files/app
+    image: nsanjula/vprofileapp
+    container_name: vproapp
+    ports:
+      - "8080:8080"
+    volumes:
+      - vproappdata:/usr/local/tomcat/webapps
+
+  vproweb:
+    build:
+      context: ./Docker-files/web
+    image: nsanjula/vprofileweb
+    container_name: vproweb
+    ports:
+      - "80:80"
+
+# infromation about the volumes
+volumes:
+  vprodbdata: {}
+  vproappdata: {}
